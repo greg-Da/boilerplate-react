@@ -1,0 +1,7 @@
+body{
+    background-color: darkgray;
+}
+
+#main:first-child{
+    width: 100%;
+}
