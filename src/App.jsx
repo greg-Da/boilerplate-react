@@ -8,11 +8,25 @@ import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { useEffect, useState } from "react";
+import AlertBox from "./components/Alert";
 
 function App() {
+  const [lightMode, setLightMode] = useState(
+    localStorage["darkMode"] === "true" ? true : false
+  );
+
+  useEffect(() => {
+    lightMode
+      ? document.body.classList.add("darkmode")
+      : document.body.classList.remove("darkmode");
+    localStorage["darkMode"] = lightMode;
+    console.log(localStorage["darkMode"]);
+  }, [lightMode]);
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar mode={lightMode} onSwitchChange={setLightMode} />
+      <AlertBox text={'Coucou'}/>
       <main id="main" className="min-h-[90vh] flex">
         <Routes>
           <Route path="/" element={<Home />} />

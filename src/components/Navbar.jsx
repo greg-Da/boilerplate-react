@@ -1,3 +1,4 @@
+import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import Grow from "@mui/material/Grow";
@@ -9,9 +10,15 @@ import Stack from "@mui/material/Stack";
 import { useState, useRef, useEffect } from "react";
 import checkAuth from "../utils/currentUser";
 
-export default function Navbar() {
+Navbar.proptypes = {
+  mode: PropTypes.bool.isRequired,
+  onSwitchChange: PropTypes.func.isRequired,
+};
+
+export default function Navbar({ mode, onSwitchChange }) {
   //AUTH TO IMPLEMENT
 
+  console.log("mode", mode);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
@@ -27,7 +34,6 @@ export default function Navbar() {
     setOpen(false);
   };
 
-
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
   useEffect(() => {
@@ -39,73 +45,81 @@ export default function Navbar() {
   }, [open]);
 
   return (
-    <nav className="min-h-[5vh] flex justify-between p-2 bg-white shadow-lg border-b-2 border-black">
+    <nav className="min-h-[5vh] flex justify-between p-2 shadow-lg border-b-2 border-black">
       <div>
         <Link className="font-bold text-3xl" to={"/"}>
           Home
         </Link>
       </div>
 
-      {checkAuth() ? (
-        <Stack  direction="row" spacing={2}>
-          <div
-            ref={anchorRef}
-            id="composition-button"
-            aria-controls={open ? "composition-menu" : undefined}
-            aria-expanded={open ? "true" : undefined}
-            aria-haspopup="true"
-            onClick={handleToggle}
-          >
-            {/* ///////////////////////////////
+      <div className="flex">
+        {mode === true ? (
+          <i onClick={() => onSwitchChange(!mode)} className="my-auto mr-2 text-xl fa-solid fa-sun"></i>
+        ) : (
+          <i onClick={() => onSwitchChange(!mode)} className="my-auto mr-2 text-xl fa-solid fa-moon"></i>
+        )}
+
+        {checkAuth() ? (
+          <Stack direction="row" spacing={2}>
+            <div
+              ref={anchorRef}
+              id="composition-button"
+              aria-controls={open ? "composition-menu" : undefined}
+              aria-expanded={open ? "true" : undefined}
+              aria-haspopup="true"
+              onClick={handleToggle}
+            >
+              {/* ///////////////////////////////
               {currentUser.avatar ? 
               <img src={avatar} alt="Profile Pic" />
               :
               ...
             }
               /////////////////////////////// */}
-            <i className="text-3xl cursor-pointer mt-1 mr-2 fa-solid fa-circle-user"></i>
+              <i className="text-3xl cursor-pointer mt-1 mr-2 fa-solid fa-circle-user"></i>
+            </div>
+            <Popper
+              open={open}
+              anchorEl={anchorRef.current}
+              role={undefined}
+              placement="bottom-start"
+              transition
+              disablePortal
+            >
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  style={{
+                    transformOrigin:
+                      placement === "bottom-start" ? "left top" : "left bottom",
+                  }}
+                >
+                  <Paper>
+                    <ClickAwayListener onClickAway={handleClose}>
+                      <MenuList
+                        id="composition-menu"
+                        aria-labelledby="composition-button"
+                      >
+                        <MenuItem onClick={handleClose}>
+                          <Link to={"/profile"}>Profile</Link>
+                        </MenuItem>
+                        <MenuItem onClick={handleClose}>Logout</MenuItem>
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
+          </Stack>
+        ) : (
+          <div className="flex my-auto">
+            <Link to={"/register"}>Register</Link>
+            <Link className="mx-4" to={"/login"}>
+              Login
+            </Link>
           </div>
-          <Popper
-            open={open}
-            anchorEl={anchorRef.current}
-            role={undefined}
-            placement="bottom-start"
-            transition
-            disablePortal
-          >
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                style={{
-                  transformOrigin:
-                    placement === "bottom-start" ? "left top" : "left bottom",
-                }}
-              >
-                <Paper>
-                  <ClickAwayListener onClickAway={handleClose}>
-                    <MenuList
-                      id="composition-menu"
-                      aria-labelledby="composition-button"
-                    >
-                      <MenuItem onClick={handleClose}>
-                        <Link to={"/profile"}>Profile</Link>
-                      </MenuItem>
-                      <MenuItem onClick={handleClose}>Logout</MenuItem>
-                    </MenuList>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
-          </Popper>
-        </Stack>
-      ) : (
-        <div className="flex my-auto">
-          <Link to={"/register"}>Register</Link>
-          <Link className="mx-4" to={"/login"}>
-            Login
-          </Link>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 }
