@@ -30,6 +30,7 @@ function App() {
         dispatch(logIn(data));
       })
       .catch((err) => {
+        Cookies.remove("token");
         throw err;
       });
   }
