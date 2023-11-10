@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import checkAuth from "../utils/currentUser";
+import checkAuth from "../utils/checkAuth";
 
 PrivateRoute.propTypes = {
   children: PropTypes.node.isRequired,

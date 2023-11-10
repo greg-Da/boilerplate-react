@@ -2,7 +2,7 @@
 export default async function getFetch(url, token = undefined){
 
     try {
-        const header = token ? {headers: {Authorization: `Bearer ${token}`}} : {}
+        const header = token ? {Authorization: `Bearer ${token}`} : {}
         const res = await fetch(url, {
             headers: header
         })

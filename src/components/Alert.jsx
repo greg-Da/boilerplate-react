@@ -1,38 +1,62 @@
 import { PropTypes } from "prop-types";
-import * as React from "react";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Collapse from "@mui/material/Collapse";
+import { createContext, useState } from "react";
+import { useContext } from "react";
 
-AlertBox.proptypes = {
-  text: PropTypes.string.isRequired,
-  type: PropTypes.string,
+export const AlertContext = createContext();
+
+export const AlertProvider = ({ children }) => {
+  const [alert, setAlert] = useState(null);
+  return (
+    <AlertContext.Provider value={{ alert, setAlert }}>
+      <AlertBox />
+      {children}
+    </AlertContext.Provider>
+  );
 };
 
-export default function AlertBox({ text, type }) {
-  const [open, setOpen] = React.useState(true);
+AlertProvider.proptypes = {
+  children: PropTypes.node.isRequired,
+};
 
+export default function AlertBox() {
+  const { alert, setAlert } = useContext(AlertContext);
+
+  if (!alert) return null;
+  else {
+    setTimeout(() => {
+      setAlert(null);
+    }, 15000);
+  }
+  console.log(alert);
   return (
     <div className="z-50 absolute w-full">
-      <Collapse className="max-w-md md:max-w-lg m-auto" in={open}>
+      <Collapse className="max-w-md md:max-w-lg m-auto" in={alert !== null}>
         <Alert
-          severity={type}
+          severity={alert.type}
           action={
             <IconButton
               aria-label="close"
               color="inherit"
               size="small"
               onClick={() => {
-                setOpen(false);
+                setAlert(null);
               }}
             >
               <i className="fa-solid fa-x"></i>
             </IconButton>
           }
         >
-          {text}
+          {alert.text}
         </Alert>
       </Collapse>
     </div>
   );
 }
+
+AlertBox.proptypes = {
+  text: PropTypes.string.isRequired,
+  type: PropTypes.string,
+};

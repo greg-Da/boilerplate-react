@@ -3,20 +3,34 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import allFetch from "../utils/allFetch";
 import Cookies from "js-cookie";
+import { useContext } from "react";
+import { AlertContext } from "../components/Alert";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logIn } from "../state/auth/authSlice";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const { setAlert } = useContext(AlertContext);
+
+  let dispatch = useDispatch()
+  let navigate = useNavigate()
 
   function handleSubmit() {
     const data = {
-      email,
+      identifier,
       password,
     };
-    allFetch("", "post", data, "").then((data) => {
-      console.log(data);
-      Cookies.set("token", data.jwt, { expires: 1, sameSite: "strict" });
-    });
+    allFetch("http://localhost:1337/api/auth/local", "post", data)
+      .then((data) => {
+        console.log(data);
+        setAlert({ text: "Login successfully", type: "success" });
+        Cookies.set("token", data.jwt, { expires: 1, sameSite: "strict" });
+        dispatch(logIn(data.user))
+        navigate('/')
+      })
+      .catch(() => setAlert({ text: "error", type: "error" }));
   }
 
   return (
@@ -25,10 +39,10 @@ export default function Login() {
         <h1 className="text-center mb-5 font-bold text-3xl">Login</h1>
         <form className="grid gap-y-5">
           <TextField
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            placeholder="Enter your email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            type="text"
+            placeholder="Enter your username/email"
           />
           <TextField
             value={password}

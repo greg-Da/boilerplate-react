@@ -9,12 +9,30 @@ import PrivateRoute from "./components/PrivateRoute";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { useEffect, useState } from "react";
-import AlertBox from "./components/Alert";
+import { AlertProvider } from "./components/Alert";
+import { useDispatch, useSelector } from "react-redux";
+import Cookies from "js-cookie";
+import getFetch from "./utils/getFetch";
+import { logIn } from "./state/auth/authSlice";
 
 function App() {
   const [lightMode, setLightMode] = useState(
     localStorage["darkMode"] === "true" ? true : false
   );
+
+  const currentUser = useSelector((state) => state.auth.user);
+  let dispatch = useDispatch();
+
+  const token = Cookies.get("token");
+  if (!currentUser.id && token !== undefined) {
+    getFetch(`http://localhost:1337/api/users/me`, token)
+      .then((data) => {
+        dispatch(logIn(data));
+      })
+      .catch((err) => {
+        throw err;
+      });
+  }
 
   useEffect(() => {
     lightMode
@@ -26,22 +44,23 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar mode={lightMode} onSwitchChange={setLightMode} />
-      <AlertBox text={'Coucou'}/>
       <main id="main" className="min-h-[90vh] flex">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AlertProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AlertProvider>
       </main>
 
       <Footer />

@@ -8,7 +8,10 @@ import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import Stack from "@mui/material/Stack";
 import { useState, useRef, useEffect } from "react";
-import checkAuth from "../utils/currentUser";
+import checkAuth from "../utils/checkAuth";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logOut } from "../state/auth/authSlice";
 
 Navbar.proptypes = {
   mode: PropTypes.bool.isRequired,
@@ -16,12 +19,14 @@ Navbar.proptypes = {
 };
 
 export default function Navbar({ mode, onSwitchChange }) {
-  //AUTH TO IMPLEMENT
 
-  console.log("mode", mode);
+    let navigate = useNavigate()
+    let dispatch = useDispatch()
+
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
+  
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -33,6 +38,13 @@ export default function Navbar({ mode, onSwitchChange }) {
 
     setOpen(false);
   };
+
+  const handleLogout = async (e) => {
+    await handleClose(e)
+    dispatch(logOut())
+    
+    navigate('/')
+  }
 
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
@@ -54,9 +66,15 @@ export default function Navbar({ mode, onSwitchChange }) {
 
       <div className="flex">
         {mode === true ? (
-          <i onClick={() => onSwitchChange(!mode)} className="my-auto mr-2 text-xl fa-solid fa-sun"></i>
+          <i
+            onClick={() => onSwitchChange(!mode)}
+            className="my-auto mr-2 text-xl fa-solid fa-sun"
+          ></i>
         ) : (
-          <i onClick={() => onSwitchChange(!mode)} className="my-auto mr-2 text-xl fa-solid fa-moon"></i>
+          <i
+            onClick={() => onSwitchChange(!mode)}
+            className="my-auto mr-2 text-xl fa-solid fa-moon"
+          ></i>
         )}
 
         {checkAuth() ? (
@@ -101,9 +119,11 @@ export default function Navbar({ mode, onSwitchChange }) {
                         aria-labelledby="composition-button"
                       >
                         <MenuItem onClick={handleClose}>
-                          <Link to={"/profile"}>Profile</Link>
+                          <Link to={"/profile"}>
+                            Profile
+                          </Link>
                         </MenuItem>
-                        <MenuItem onClick={handleClose}>Logout</MenuItem>
+                        <MenuItem onClick={(e)=> handleLogout(e)}>Logout</MenuItem>
                       </MenuList>
                     </ClickAwayListener>
                   </Paper>
@@ -112,7 +132,7 @@ export default function Navbar({ mode, onSwitchChange }) {
             </Popper>
           </Stack>
         ) : (
-          <div className="flex my-auto">
+          <div id="authLink" className="flex my-auto">
             <Link to={"/register"}>Register</Link>
             <Link className="mx-4" to={"/login"}>
               Login
