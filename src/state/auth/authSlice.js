@@ -19,6 +19,13 @@ const auth = createSlice({
         },
         logOut: (state) => {
             state.user = {}
+            fetch('http://localhost:3000/users/sign_out', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': Cookies.get("token")
+                }
+            })
             Cookies.remove("token")
         }
     }

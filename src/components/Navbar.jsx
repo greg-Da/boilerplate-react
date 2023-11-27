@@ -97,6 +97,7 @@ export default function Navbar({ mode, onSwitchChange }) {
               <i className="text-3xl cursor-pointer mt-1 mr-2 fa-solid fa-circle-user"></i>
             </div>
             <Popper
+            className='z-50'
               open={open}
               anchorEl={anchorRef.current}
               role={undefined}

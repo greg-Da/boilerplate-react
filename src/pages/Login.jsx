@@ -1,7 +1,6 @@
 import { Card, TextField, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import allFetch from "../utils/allFetch";
 import Cookies from "js-cookie";
 import { useContext } from "react";
 import { AlertContext } from "../components/Alert";
@@ -10,27 +9,49 @@ import { useNavigate } from "react-router-dom";
 import { logIn } from "../state/auth/authSlice";
 
 export default function Login() {
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { setAlert } = useContext(AlertContext);
 
-  let dispatch = useDispatch()
-  let navigate = useNavigate()
+  let dispatch = useDispatch();
+  let navigate = useNavigate();
 
   function handleSubmit() {
     const data = {
-      identifier,
-      password,
+      user: {
+        email,
+        password,
+      },
     };
-    allFetch("http://localhost:1337/api/auth/local", "post", data)
-      .then((data) => {
-        console.log(data);
-        setAlert({ text: "Login successfully", type: "success" });
-        Cookies.set("token", data.jwt, { expires: 1, sameSite: "strict" });
-        dispatch(logIn(data.user))
-        navigate('/')
+    fetch("http://localhost:3000/users/sign_in", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((res) => {
+        if (res.ok) {
+          const data = res.json();
+          Cookies.set("token", res.headers.get("Authorization"), {
+            expires: 2,
+            sameSite: "strict",
+          });
+          return data;
+        } else {
+          throw new Error("Something went wrong");
+        }
       })
-      .catch(() => setAlert({ text: "error", type: "error" }));
+      .then((data) => {
+        setAlert({ text: "Registered successfully", type: "success" });
+        dispatch(logIn(data.user));
+        navigate("/");
+      })
+      .catch((err) => {
+        console.error(err);
+        console.error(err.response);
+        setAlert({ text: err.message, type: "error" });
+      });
   }
 
   return (
@@ -39,8 +60,8 @@ export default function Login() {
         <h1 className="text-center mb-5 font-bold text-3xl">Login</h1>
         <form className="grid gap-y-5">
           <TextField
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             type="text"
             placeholder="Enter your username/email"
           />

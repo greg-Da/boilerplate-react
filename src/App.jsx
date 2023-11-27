@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { AlertProvider } from "./components/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
-import getFetch from "./utils/getFetch";
 import { logIn } from "./state/auth/authSlice";
 
 function App() {
@@ -23,25 +22,35 @@ function App() {
   const currentUser = useSelector((state) => state.auth.user);
   let dispatch = useDispatch();
 
-  const token = Cookies.get("token");
-  if (!currentUser.id && token !== undefined) {
-    getFetch(`http://localhost:1337/api/users/me`, token)
-      .then((data) => {
-        dispatch(logIn(data));
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!currentUser.id && token !== undefined) {
+      fetch("http://localhost:3000/member-data", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
       })
-      .catch((err) => {
-        Cookies.remove("token");
-        throw err;
-      });
-  }
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          dispatch(logIn(data.user));
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [currentUser, dispatch]);
 
   useEffect(() => {
     lightMode
       ? document.body.classList.add("darkmode")
       : document.body.classList.remove("darkmode");
     localStorage["darkMode"] = lightMode;
-    console.log(localStorage["darkMode"]);
   }, [lightMode]);
+
   return (
     <BrowserRouter>
       <Navbar mode={lightMode} onSwitchChange={setLightMode} />

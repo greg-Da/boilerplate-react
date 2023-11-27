@@ -1,38 +1,58 @@
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { Button, Card, TextField } from "@mui/material";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import allFetch from "../utils/allFetch";
 import Cookies from "js-cookie";
 import { useContext } from "react";
 import { AlertContext } from "../components/Alert";
-import { logIn } from '../state/auth/authSlice';
+import { logIn } from "../state/auth/authSlice";
 
 export default function Register() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password_confirmation, setPassword_confirmation] = useState("");
   const { setAlert } = useContext(AlertContext);
 
-  let dispatch = useDispatch()
-  let navigate = useNavigate()
+  let dispatch = useDispatch();
+  let navigate = useNavigate();
 
   function handleSubmit() {
     const data = {
-      username: name,
-      email,
-      password,
+      user: {
+        email,
+        password,
+        password_confirmation,
+      },
     };
-    allFetch("http://localhost:1337/api/auth/local/register", "post", data, "")
+    fetch("http://localhost:3000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((res) => {
+        if (res.ok) {
+          const data = res.json();
+          Cookies.set("token", res.headers.get("Authorization"), {
+            expires: 2,
+            sameSite: "strict",
+          });
+          return data;
+        } else {
+          throw new Error("Something went wrong");
+        }
+      })
       .then((data) => {
-        console.log(data);
         setAlert({ text: "Registered successfully", type: "success" });
-        Cookies.set("token", data.jwt, { expires: 1, sameSite: "strict" });
         dispatch(logIn(data.user));
         navigate("/");
       })
-      .catch(() => setAlert({ text: "error", type: "error" }));
+      .catch((err) => {
+        console.error(err);
+        setAlert({ text: err.message, type: "error" });
+      });
   }
 
   return (
@@ -40,12 +60,6 @@ export default function Register() {
       <Card className="p-10">
         <h1 className="text-center mb-5 font-bold text-3xl">Register</h1>
         <form className="grid gap-y-5">
-          <TextField
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            type="text"
-            placeholder="Enter your name"
-          />
           <TextField
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -57,6 +71,12 @@ export default function Register() {
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             placeholder="Enter your password"
+          />
+          <TextField
+            value={password_confirmation}
+            onChange={(e) => setPassword_confirmation(e.target.value)}
+            type="password"
+            placeholder="Enter your password confirmation"
           />
           <div className="flex justify-center">
             <Button onClick={() => handleSubmit()} variant="contained">
