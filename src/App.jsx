@@ -13,6 +13,7 @@ import { AlertProvider } from "./components/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
 import { logIn } from "./state/auth/authSlice";
+import PropertiesShow from "./pages/Property/Show";
 
 function App() {
   const [lightMode, setLightMode] = useState(
@@ -60,6 +61,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/properties/:id" element={<PropertiesShow />} />
             <Route
               path="/profile"
               element={
